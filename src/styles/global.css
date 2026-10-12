@@ -1,0 +1,109 @@
+/* One plain, book-like layout: a single centered column of serif text. */
+
+:root {
+  --text: #1f1a17;
+  --bg: #fcfaf5;
+  --muted: #6b625a;
+  --rule: #e3ddd2;
+  --link: #7a3b1e;
+  --measure: 38rem;
+}
+
+html {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Gentium Plus', Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.05rem, 1rem + 0.4vw, 1.25rem);
+  line-height: 1.65;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+header,
+main,
+footer {
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding-inline: 1rem;
+}
+
+header {
+  padding-block: 1rem;
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+}
+
+header a {
+  color: inherit;
+  text-decoration: none;
+}
+
+main {
+  padding-block: 1rem 3rem;
+}
+
+footer {
+  padding-block: 1.5rem 2.5rem;
+  border-top: 1px solid var(--rule);
+  font-size: 0.85em;
+  color: var(--muted);
+}
+
+a {
+  color: var(--link);
+}
+
+h1 {
+  margin: 1rem 0 1.5rem;
+  font-size: 1.75em;
+  font-weight: 400;
+  line-height: 1.2;
+  text-align: center;
+}
+
+p {
+  margin: 0 0 1em;
+}
+
+.byline {
+  margin-top: -1rem;
+  text-align: center;
+  color: var(--muted);
+}
+
+/* Story text: indented paragraphs with a small gap, as in the printed book. */
+article p {
+  margin: 0 0 0.4em;
+  text-indent: 1.5em;
+}
+
+figure {
+  margin: 2rem auto;
+  text-align: center;
+}
+
+figure img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+}
+
+figcaption {
+  margin-top: 0.6rem;
+  font-style: italic;
+  font-size: 0.9em;
+  color: var(--muted);
+}
+
+.story-nav {
+  margin-top: 2.5rem;
+}
+
+.source {
+  font-size: 0.85em;
+  color: var(--muted);
+}

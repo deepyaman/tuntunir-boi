@@ -1,0 +1,27 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Illustration from '../../components/Illustration.astro';
+
+export async function getStaticPaths() {
+  const stories = await getCollection('stories');
+  return stories.map((story) => ({ params: { slug: story.id }, props: { story } }));
+}
+
+const { story } = Astro.props;
+const { Content } = await render(story);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base title={`${story.data.title} · Ṭunṭunir Boi`}>
+  <article>
+    <h1>{story.data.title}</h1>
+    <Content components={{ Illustration }} />
+  </article>
+  <nav class="story-nav">
+    <a href={`${base}/`}>← Contents</a>
+  </nav>
+  <p class="source">
+    Source: <a href={story.data.source.wikisource}>Wikisource</a>, {story.data.source.edition}.
+  </p>
+</Base>

@@ -1,16 +1,21 @@
 ---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+
+const stories = (await getCollection('stories')).sort((a, b) => a.data.order - b.data.order);
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Base title="Ṭunṭunir Boi">
+  <h1>Ṭunṭunir Boi</h1>
+  <p class="byline">Upendrakishore Ray Chowdhury</p>
+  <p>
+    Stories from <em>Tuntunir Boi</em> in romanized Bengali, with the original
+    illustrations, for readers who speak Bengali but do not read the script.
+  </p>
+  <ol class="contents">
+    {stories.map((story) => (
+      <li><a href={`${base}/stories/${story.id}/`}>{story.data.title}</a></li>
+    ))}
+  </ol>
+</Base>

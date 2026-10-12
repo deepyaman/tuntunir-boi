@@ -1,0 +1,36 @@
+---
+// Gentium Plus covers every diacritic the romanization uses, so no letter falls back to another font.
+import '@fontsource/gentium-plus/400.css';
+import '@fontsource/gentium-plus/400-italic.css';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<!doctype html>
+<html lang="bn-Latn">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header>
+      <a href={`${base}/`}>Ṭunṭunir Boi</a>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer>
+      <p>
+        Text from the 1964 Deb Sahitya Kutir edition, via <a href="https://bn.wikisource.org/wiki/টুনটুনির_বই">Bengali Wikisource</a>. The book is in the public domain.
+      </p>
+    </footer>
+  </body>
+</html>
