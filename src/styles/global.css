@@ -90,6 +90,9 @@ figure img {
   max-width: 100%;
   height: auto;
   margin-inline: auto;
+  /* The scans are black ink on white paper. Multiplying with the page makes
+     the white take on the page colour, so the drawings sit on the cream. */
+  mix-blend-mode: multiply;
 }
 
 figcaption {
