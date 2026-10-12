@@ -9,7 +9,10 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "npm run test:content && npm run test:e2e",
+    "test:content": "node --test tests/content.test.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.0.3",
