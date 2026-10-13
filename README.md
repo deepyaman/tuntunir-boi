@@ -28,3 +28,6 @@ The Bengali text follows the 1964 Deb Sahitya Kutir edition as transcribed on
 [Bengali Wikisource](https://bn.wikisource.org/wiki/টুনটুনির_বই), checked against the
 scanned pages. Illustrations are cropped from the same scan. The book is in the public
 domain.
+
+Audio built with [Indic-Speak](https://huggingface.co/bodhan-ai/indic-speak) from
+Bodhan AI / AI4Bharat; see [`pipeline/`](pipeline/) for how it is generated.
