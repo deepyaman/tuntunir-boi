@@ -1,0 +1,3 @@
+# Values shared by the catalog and the parameters, as ${globals:<name>}.
+tts_model: bodhan-ai/indic-speak
+tts_revision: 76e0814f189321efe550011850cd288dae366aad # commit on the Hub

@@ -1,6 +1,14 @@
-"""Datasets the catalog needs beyond kedro-datasets: audio files and the TTS model."""
+"""Datasets the catalog needs beyond kedro-datasets: audio files and the two models."""
 
-from .audio import Audio, WAVDataset
+from .audio import AACDataset, Audio, WAVDataset
 from .indic_speak import IndicSpeakDataset
+from .mms_aligner import Aligner, MMSAlignerDataset
 
-__all__ = ["Audio", "IndicSpeakDataset", "WAVDataset"]
+__all__ = [
+    "AACDataset",
+    "Aligner",
+    "Audio",
+    "IndicSpeakDataset",
+    "MMSAlignerDataset",
+    "WAVDataset",
+]

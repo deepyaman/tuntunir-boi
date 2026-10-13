@@ -17,11 +17,27 @@ paragraphs:
 
 tts_model:
   type: tuntunir_boi.datasets.IndicSpeakDataset
-  model: bodhan-ai/indic-speak
-  revision: 76e0814f189321efe550011850cd288dae366aad # commit on the Hub
+  model: ${globals:tts_model}
+  revision: ${globals:tts_revision}
 
 paragraph_wavs:
   type: partitions.PartitionedDataset
   path: data/${runtime_params:story}/wav
   dataset: tuntunir_boi.datasets.WAVDataset
   filename_suffix: .wav
+
+aligner:
+  type: tuntunir_boi.datasets.MMSAlignerDataset
+
+timings:
+  type: json.JSONDataset
+  filepath: ../src/stories/${runtime_params:story}/audio/timings.json
+  save_args:
+    ensure_ascii: false
+    indent: 1
+
+paragraph_clips:
+  type: partitions.PartitionedDataset
+  path: ../src/stories/${runtime_params:story}/audio
+  dataset: tuntunir_boi.datasets.AACDataset
+  filename_suffix: .m4a

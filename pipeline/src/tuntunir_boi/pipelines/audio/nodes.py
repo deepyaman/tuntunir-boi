@@ -4,7 +4,7 @@ import logging
 import warnings
 from collections.abc import Callable
 
-from tuntunir_boi.datasets import Audio
+from tuntunir_boi.datasets import Aligner, Audio
 
 from . import text
 
@@ -79,3 +79,52 @@ def synthesize(
         return run
 
     return {pid: take(pid, sentences) for pid, sentences in paragraphs.items()}
+
+
+def align_words(
+    paragraphs: dict[str, list[str]],
+    paragraph_wavs: dict[str, Callable[[], Audio]],
+    aligner: Aligner,
+    params: dict,
+) -> dict:
+    """Where every sentence and word is spoken in its paragraph's clip.
+
+    This is what the site reads to play a word or a sentence as a range of the clip.
+    Boundaries are raw: whatever padding playback wants is added there.
+    """
+    timings = {
+        "model": params["model"],
+        "revision": params["revision"],
+        "voice": params["voice"],
+        "seed": params["seed"],
+        "paragraphs": [],
+    }
+    for pid, sentences in paragraphs.items():
+        samples, rate = paragraph_wavs[pid]()
+        words_by_sentence = [text.words(s) for s in sentences]
+        spans = iter(
+            aligner(samples, rate, [w for ws in words_by_sentence for w in ws])
+        )
+        entry = {
+            "clip": f"{pid}.m4a",
+            "duration": round(len(samples) / rate, 3),
+            "sentences": [],
+        }
+        for ws in words_by_sentence:
+            words = [{"text": w, **vars(next(spans))} for w in ws]
+            entry["sentences"].append(
+                {"start": words[0]["start"], "end": words[-1]["end"], "words": words}
+            )
+        timings["paragraphs"].append(entry)
+    return timings
+
+
+def encode_clips(
+    paragraphs: dict[str, list[str]], paragraph_wavs: dict[str, Callable[[], Audio]]
+) -> dict[str, Callable[[], Audio]]:
+    """Pass this story's takes on to the clip dataset, which encodes them as it saves.
+
+    The format change lives in `AACDataset`; this node only says which takes become
+    clips. `data/` may still hold takes from an earlier run with more paragraphs.
+    """
+    return {pid: paragraph_wavs[pid] for pid in paragraphs}

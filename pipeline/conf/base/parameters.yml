@@ -1,6 +1,8 @@
 # Parameters, available to nodes as `params:<name>`.
 
 tts:
+  model: ${globals:tts_model} # recorded in timings.json for provenance
+  revision: ${globals:tts_revision}
   voice: Ishita # or Sourav, the other Bengali speaker of Indic-Speak
   seed: 1234 # sampling seed; change it to get different takes
   temperature: 0.6 # the model's default; retries raise it by 0.1 each
