@@ -1,7 +1,8 @@
 // Checks every story directory for the things a build cannot catch:
 // the romanized text and the Bengali source line up, the romanized text
-// uses only the characters docs/romanization.md allows, and every picture
-// the story imports exists. Run with `npm run test:content`.
+// uses only the characters docs/romanization.md allows, every picture the
+// story imports exists, and any generated audio matches the text word for
+// word. Run with `npm run test:content`.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -62,5 +63,31 @@ for (const dir of readdirSync(storiesDir).sort()) {
       assert.ok(existsSync(join(storiesDir, dir, file)), `imported picture ${file} is missing`);
     }
     assert.equal(rom.illustrations.length, rom.imports.length, 'every imported picture should be placed exactly once');
+  });
+
+  // Audio is optional until the pipeline has run for the story; once it has,
+  // the clips and timings must describe exactly the Bengali text, word for word.
+  const audioDir = join(storiesDir, dir, 'audio');
+  const timingsPath = join(audioDir, 'timings.json');
+  test(`story ${dir} audio`, { skip: !existsSync(timingsPath) && 'no audio/timings.json yet' }, () => {
+    const src = parseBengali(readFileSync(join(storiesDir, dir, 'source.bn.md'), 'utf8'));
+    const timings = JSON.parse(readFileSync(timingsPath, 'utf8'));
+    const clips = readdirSync(audioDir).filter((f) => f.endsWith('.m4a')).sort();
+
+    assert.equal(timings.paragraphs.length, src.paragraphs.length, 'timings.json paragraph count differs from source.bn.md');
+    assert.deepEqual(timings.paragraphs.map((p) => p.clip).sort(), clips, 'clips in audio/ and timings.json differ');
+
+    timings.paragraphs.forEach((p, i) => {
+      const spoken = p.sentences.flatMap((s) => s.words.map((w) => w.text));
+      assert.deepEqual(spoken, src.paragraphs[i].split(/\s+/), `paragraph ${i + 1}: words in timings.json differ from source.bn.md`);
+      let last = 0;
+      for (const s of p.sentences) {
+        assert.ok(s.start >= last && s.start <= s.end && s.end <= p.duration, `${p.clip}: sentence out of order or outside the clip`);
+        for (const w of s.words) {
+          assert.ok(w.start >= last && w.start <= w.end && w.end <= p.duration, `${p.clip}: word "${w.text}" out of order or outside the clip`);
+          last = w.start;
+        }
+      }
+    });
   });
 }
