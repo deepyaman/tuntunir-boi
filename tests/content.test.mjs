@@ -1,8 +1,8 @@
 // Checks every story directory for the things a build cannot catch:
 // the romanized text and the Bengali source line up, the romanized text
 // uses only the characters docs/romanization.md allows, every picture the
-// story imports exists, and any generated audio matches the text word for
-// word. Run with `npm run test:content`.
+// story imports exists, and the generated audio matches both texts word
+// for word and sentence for sentence. Run with `npm run test:content`.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -65,11 +65,15 @@ for (const dir of readdirSync(storiesDir).sort()) {
     assert.equal(rom.illustrations.length, rom.imports.length, 'every imported picture should be placed exactly once');
   });
 
-  // Audio is optional until the pipeline has run for the story; once it has,
-  // the clips and timings must describe exactly the Bengali text, word for word.
+  // The story page plays words and sentences from the clips, so a story needs its
+  // audio before it can be built. The timings must describe exactly the Bengali
+  // text, word for word, and the romanized text must split into the same
+  // sentences and words, since the page pairs them by position.
   const audioDir = join(storiesDir, dir, 'audio');
   const timingsPath = join(audioDir, 'timings.json');
-  test(`story ${dir} audio`, { skip: !existsSync(timingsPath) && 'no audio/timings.json yet' }, () => {
+  test(`story ${dir} audio`, () => {
+    assert.ok(existsSync(timingsPath), 'audio/timings.json is missing; run the pipeline (see pipeline/README.md)');
+    const rom = parseRomanized(readFileSync(join(storiesDir, dir, 'index.mdx'), 'utf8'));
     const src = parseBengali(readFileSync(join(storiesDir, dir, 'source.bn.md'), 'utf8'));
     const timings = JSON.parse(readFileSync(timingsPath, 'utf8'));
     const clips = readdirSync(audioDir).filter((f) => f.endsWith('.m4a')).sort();
@@ -80,6 +84,14 @@ for (const dir of readdirSync(storiesDir).sort()) {
     timings.paragraphs.forEach((p, i) => {
       const spoken = p.sentences.flatMap((s) => s.words.map((w) => w.text));
       assert.deepEqual(spoken, src.paragraphs[i].split(/\s+/), `paragraph ${i + 1}: words in timings.json differ from source.bn.md`);
+      // Same sentence rule as src/components/Paragraph.astro: the pipeline splits the
+      // Bengali after a danda, ! or ? (plus a closing quote), and the danda is a full stop here.
+      const sentences = rom.paragraphs[i].split(/(?<=[.!?][’”]?)\s+/);
+      assert.deepEqual(
+        sentences.map((s) => s.split(/\s+/).length),
+        p.sentences.map((s) => s.words.length),
+        `paragraph ${i + 1}: romanized sentences and words do not line up with timings.json`,
+      );
       let last = 0;
       for (const s of p.sentences) {
         assert.ok(s.start >= last && s.start <= s.end && s.end <= p.duration, `${p.clip}: sentence out of order or outside the clip`);
