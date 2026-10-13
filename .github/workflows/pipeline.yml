@@ -1,0 +1,24 @@
+name: Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths: ['pipeline/**', 'src/stories/*/source.bn.md', .github/workflows/pipeline.yml]
+  pull_request:
+    paths: ['pipeline/**', 'src/stories/*/source.bn.md', .github/workflows/pipeline.yml]
+
+defaults:
+  run:
+    working-directory: pipeline
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          working-directory: pipeline
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run pytest
