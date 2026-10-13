@@ -6,7 +6,7 @@ in romanized Bengali, with the original illustrations.
 It exists for people who speak Bengali but cannot read the script. Each story is
 transcribed phonemically (see [`docs/romanization.md`](docs/romanization.md)) and laid
 out plainly, the way the printed book is: text, then a centered illustration with its
-caption.
+caption. Tap a word to hear it, or the mark after a sentence to hear the sentence.
 
 Live site: <https://deepyaman.github.io/tuntunir-boi/>
 
