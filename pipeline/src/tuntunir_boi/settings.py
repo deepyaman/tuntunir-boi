@@ -1,6 +1,8 @@
-"""Project settings. There is no need to edit this file unless you want to change values
-from the Kedro defaults. For further information, including these default values, see
-https://docs.kedro.org/en/stable/configure/configuration_basics/#configuration"""
+"""Project settings.
+
+Only values that differ from the Kedro defaults need to be set here; see
+https://docs.kedro.org/en/stable/configure/configuration_basics/#configuration
+"""
 
 # Instantiated project hooks.
 # For example, after creating a hooks.py and defining a ProjectHooks class there, do
