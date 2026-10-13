@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tuntunir_boi"
+description = "Kedro pipelines that derive audio (and later glossaries) for the stories"
+readme = "README.md"
+requires-python = ">=3.14"
+dynamic = ["version"]
+dependencies = [
+    "kedro~=1.7.0",
+    "kedro-datasets~=9.6",
+]
+
+[dependency-groups]
+dev = ["pytest"]
+
+[tool.setuptools.dynamic.version]
+attr = "tuntunir_boi.__version__"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[tool.kedro]
+package_name = "tuntunir_boi"
+project_name = "Tuntunir Boi"
+kedro_init_version = "1.7.0"
+tools = "['None']"
+example_pipeline = "False"
+source_dir = "src"

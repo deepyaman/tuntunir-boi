@@ -1,0 +1,12 @@
+# Kedro: local configuration and intermediate data stay on each machine
+conf/local/*
+!conf/local/.gitkeep
+data/
+.viz/
+*.log
+
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+*.egg-info/
