@@ -1,1 +1,16 @@
 # Datasets. See https://docs.kedro.org/en/stable/catalog-data/introduction/
+#
+# Every run handles one story: `kedro run --params story=01-tuntuni-ar-biraler-kotha`.
+# Inputs come from, and final outputs go to, that story's directory in the site;
+# intermediates stay in data/ (not committed).
+
+source_bn:
+  type: text.TextDataset
+  filepath: ../src/stories/${runtime_params:story}/source.bn.md
+
+paragraphs:
+  type: json.JSONDataset
+  filepath: data/${runtime_params:story}/paragraphs.json
+  save_args:
+    ensure_ascii: false
+    indent: 1
