@@ -6,6 +6,7 @@
   --muted: #6b625a;
   --rule: #e3ddd2;
   --link: #7a3b1e;
+  --highlight: #f3e5bf;
   --measure: 38rem;
 }
 
@@ -78,6 +79,45 @@ p {
 article p {
   margin: 0 0 0.4em;
   text-indent: 1.5em;
+}
+
+/* Story audio: tap a word to hear it, or the mark after a sentence to hear the sentence.
+   The word being spoken is tinted. */
+article {
+  touch-action: manipulation; /* a tap on a word must not double-tap zoom */
+}
+
+.word {
+  cursor: pointer;
+}
+
+.word.playing {
+  background: var(--highlight);
+  /* The shadow pads the tint a little without moving the text. */
+  box-shadow: 0 0 0 0.12em var(--highlight);
+  border-radius: 0.2em;
+}
+
+.play {
+  padding: 0 0.1em 0 0.2em; /* close to the full stop; the usual word space follows */
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--muted);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* The glyph is CSS so it is not part of the text: copying a sentence does not copy it,
+   and the button is announced by its label alone. */
+.play::before {
+  content: '▸';
+}
+
+.play:hover,
+.play:focus-visible {
+  color: var(--link);
 }
 
 figure {

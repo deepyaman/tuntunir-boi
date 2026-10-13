@@ -1,6 +1,33 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 const story = 'stories/tuntuni-ar-biraler-kotha/';
+
+// The reader script throws if the markup and the timings disagree, and a clip that
+// cannot be decoded rejects; both surface as page errors, so the audio tests watch for them.
+function pageErrors(page: Page) {
+  const errors: Error[] = [];
+  page.on('pageerror', (error) => errors.push(error));
+  return errors;
+}
+
+// Records the index of every word that lights up, in order. A word is lit for well
+// under a second, too briefly to catch reliably by polling, so the tests read the
+// recording once playback has ended. Headless Chrome runs with audio muted; the audio
+// clock still runs, which is what moves the tint and fires the end of a clip.
+async function recordLitWords(page: Page) {
+  await page.evaluate(() => {
+    const words = [...document.querySelectorAll('article .word')];
+    const lit: number[] = [];
+    (window as any).lit = lit;
+    new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        const el = m.target as Element;
+        if (el.classList.contains('playing') && lit[lit.length - 1] !== words.indexOf(el)) lit.push(words.indexOf(el));
+      }
+    }).observe(document.querySelector('article')!, { subtree: true, attributes: true, attributeFilter: ['class'] });
+  });
+  return () => page.evaluate(() => (window as any).lit as number[]);
+}
 
 test('the contents page lists the first story and links to it', async ({ page }) => {
   await page.goto('./');
@@ -25,6 +52,40 @@ test('the story page shows the text and the illustrations', async ({ page }) => 
       .poll(() => img.evaluate((el) => (el as HTMLImageElement).complete && (el as HTMLImageElement).naturalWidth))
       .toBeGreaterThan(0);
   }
+});
+
+test('every word and sentence is marked up, and the text reads as before', async ({ page }) => {
+  const errors = pageErrors(page);
+  await page.goto(story);
+  await expect(page.locator('article .word')).toHaveCount(213);
+  await expect(page.getByRole('button', { name: 'Play sentence' })).toHaveCount(23);
+  // The play marks are CSS, so the paragraph text is just the prose, spaces intact.
+  await expect(page.locator('article p').first()).toHaveText(
+    'Grihôsther ghôrer pichhone begun gachh achhe. Shei begun gachher pata ṭhõṭ diye shelai kôre Ṭunṭuni pakhiṭi tar basha bẽdhechhe.',
+  );
+  expect(errors).toEqual([]);
+});
+
+test('tapping a word plays it and lights it while it sounds', async ({ page }) => {
+  const errors = pageErrors(page);
+  await page.goto(story);
+  const lit = await recordLitWords(page);
+  await page.locator('article .word').nth(5).click(); // "achhe.", under half a second
+  await expect(page.locator('article .playing')).toHaveCount(1);
+  await expect(page.locator('article .playing')).toHaveCount(0);
+  expect(await lit()).toEqual([5]);
+  expect(errors).toEqual([]);
+});
+
+test('the mark after a sentence plays it word by word', async ({ page }) => {
+  const errors = pageErrors(page);
+  await page.goto(story);
+  const lit = await recordLitWords(page);
+  await page.getByRole('button', { name: 'Play sentence' }).first().click(); // six words, under three seconds
+  await expect(page.locator('article .playing')).toHaveCount(1);
+  await expect(page.locator('article .playing')).toHaveCount(0);
+  expect(await lit()).toEqual([0, 1, 2, 3, 4, 5]);
+  expect(errors).toEqual([]);
 });
 
 test('nothing is wider than the viewport', async ({ page }) => {

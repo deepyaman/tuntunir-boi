@@ -2,22 +2,50 @@
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Illustration from '../../components/Illustration.astro';
+import Paragraph from '../../components/Paragraph.astro';
 
 export async function getStaticPaths() {
   const stories = await getCollection('stories');
   return stories.map((story) => ({ params: { slug: story.id }, props: { story } }));
 }
 
+// The pipeline writes one clip per paragraph and timings.json into each story's audio/
+// (see pipeline/README.md). The page inlines the ranges the reader script needs, with
+// the clip names resolved to their built URLs.
+interface Range {
+  start: number;
+  end: number;
+}
+interface Timings {
+  paragraphs: { clip: string; sentences: (Range & { words: Range[] })[] }[];
+}
+const clipUrls = import.meta.glob('/src/stories/*/audio/*.m4a', { query: '?url', import: 'default', eager: true }) as Record<string, string>;
+const allTimings = import.meta.glob('/src/stories/*/audio/timings.json', { import: 'default', eager: true }) as Record<string, Timings>;
+
 const { story } = Astro.props;
 const { Content } = await render(story);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+const dir = story.filePath!.replace(/\/index\.mdx$/, '');
+const timings = allTimings[`/${dir}/audio/timings.json`];
+if (!timings) throw new Error(`${dir} has no audio/timings.json; run the pipeline first (see pipeline/README.md)`);
+const audio = timings.paragraphs.map((p) => ({
+  clip: clipUrls[`/${dir}/audio/${p.clip}`],
+  sentences: p.sentences.map((s) => ({
+    start: s.start,
+    end: s.end,
+    words: s.words.map((w) => ({ start: w.start, end: w.end })),
+  })),
+}));
 ---
 
 <Base title={`${story.data.title} · Ṭunṭunir Boi`}>
   <article>
     <h1>{story.data.title}</h1>
-    <Content components={{ Illustration }} />
+    <Content components={{ Illustration, p: Paragraph }} />
   </article>
+  <script type="application/json" id="timings" set:html={JSON.stringify(audio)} />
+  <script src="../../scripts/reader.ts"></script>
   <nav class="story-nav">
     <a href={`${base}/`}>← Contents</a>
   </nav>

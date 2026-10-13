@@ -1,0 +1,17 @@
+---
+// A story paragraph with every sentence and word wrapped, so the reader can play
+// them (src/scripts/reader.ts pairs them with audio/timings.json by position). The
+// sentence rule is the pipeline's rule for the Bengali, with a full stop for the danda;
+// tests/content.test.mjs checks that both texts split alike.
+//
+// The markup is built as one string rather than written as a template, so the single
+// spaces between words and sentences are literal characters that nothing can collapse.
+const text = (await Astro.slots.render('default')).trim();
+
+const word = (w: string) => `<span class="word">${w}</span>`;
+const sentence = (s: string) =>
+  `<span class="sentence">${s.split(/\s+/).map(word).join(' ')}<button class="play" aria-label="Play sentence"></button></span>`;
+const html = text.split(/(?<=[.!?][’”]?)\s+/).map(sentence).join(' ');
+---
+
+<p set:html={html} />
