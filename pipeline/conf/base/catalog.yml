@@ -14,3 +14,14 @@ paragraphs:
   save_args:
     ensure_ascii: false
     indent: 1
+
+tts_model:
+  type: tuntunir_boi.datasets.IndicSpeakDataset
+  model: bodhan-ai/indic-speak
+  revision: 76e0814f189321efe550011850cd288dae366aad # commit on the Hub
+
+paragraph_wavs:
+  type: partitions.PartitionedDataset
+  path: data/${runtime_params:story}/wav
+  dataset: tuntunir_boi.datasets.WAVDataset
+  filename_suffix: .wav

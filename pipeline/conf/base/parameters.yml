@@ -1,1 +1,7 @@
 # Parameters, available to nodes as `params:<name>`.
+
+tts:
+  voice: Ishita # or Sourav, the other Bengali speaker of Indic-Speak
+  seed: 1234 # sampling seed; change it to get different takes
+  temperature: 0.6 # the model's default; retries raise it by 0.1 each
+  retries: 3 # how many more takes to try when one runs on past its end
