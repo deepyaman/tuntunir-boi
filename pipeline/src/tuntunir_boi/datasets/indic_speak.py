@@ -1,6 +1,7 @@
 """The Indic-Speak text-to-speech model (Bodhan AI / AI4Bharat)."""
 
-import sys
+import importlib.util
+from pathlib import Path
 from typing import Any
 
 import torch
@@ -13,28 +14,38 @@ class IndicSpeakDataset(AbstractDataset):
 
     The model repository is gated: accept its license on the Hub and log in with
     `hf auth login` once. It ships its own `inference.py`, whose `TTS` class wires the
-    language model to the SNAC quantizer and the Vocos decoder.
+    language model to the SNAC quantizer and the Vocos decoder; the pinned revision
+    freezes that code along with the weights.
     """
 
-    def __init__(self, model: str, revision: str):
+    def __init__(self, model: str, revision: str, local_dir: str):
         self._model = model
         self._revision = revision
+        self._local_dir = Path(local_dir)
 
     def load(self):
-        local = snapshot_download(self._model, revision=self._revision)
-        # `inference` only exists once the snapshot is on disk, so it cannot be a
-        # module-level import.
-        if local not in sys.path:
-            sys.path.insert(0, local)
-        from inference import TTS
-
-        return TTS(local, device=_device())
+        # A plain directory, not the Hub cache: the model's loader locates its own
+        # files relative to inference.py, and the cache's symlinks would mislead it.
+        snapshot_download(
+            self._model, revision=self._revision, local_dir=self._local_dir
+        )
+        # That loader is a script in the repository, not an installable package.
+        spec = importlib.util.spec_from_file_location(
+            "indic_speak", self._local_dir / "inference.py"
+        )
+        inference = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(inference)
+        return inference.TTS(str(self._local_dir), device=_device())
 
     def save(self, data) -> None:
         raise DatasetError(f"{self.__class__.__name__} is a read-only dataset type")
 
     def _describe(self) -> dict[str, Any]:
-        return {"model": self._model, "revision": self._revision}
+        return {
+            "model": self._model,
+            "revision": self._revision,
+            "local_dir": str(self._local_dir),
+        }
 
 
 def _device() -> str:

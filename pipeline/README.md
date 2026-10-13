@@ -62,7 +62,8 @@ One story per run, named by its directory under `src/stories/`:
 uv run kedro run --params story=01-tuntuni-ar-biraler-kotha
 ```
 
-The first run downloads the model (about 8 GB) and the aligner (about 1 GB). A story
+The first run downloads the model (about 8 GB, into `data/models/`) and the aligner
+(about 1 GB, into torchaudio's cache). A story
 takes a few minutes on an Apple Silicon GPU; the log prints each paragraph's length as
 it finishes, and warns if a take ran on past its end. To redo a story with a different
 take, change `tts.seed` in `conf/base/parameters.yml` (or pass
