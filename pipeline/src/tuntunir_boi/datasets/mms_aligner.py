@@ -59,12 +59,12 @@ class Aligner:
             i += len(tokens)
             spans.append(
                 Span(
-                    start=round(word[0].start * seconds_per_frame, 3),
-                    end=round(word[-1].end * seconds_per_frame, 3),
+                    start=word[0].start * seconds_per_frame,
+                    end=word[-1].end * seconds_per_frame,
                     score=round(float(np.mean([s.score for s in word])), 3),
                 )
             )
-        return spans
+        return _widen(spans, len(samples) / rate)
 
     def _tokens(self, word: str) -> list[int]:
         latin = self._uroman.romanize_string(
@@ -72,6 +72,30 @@ class Aligner:
         )
         latin = re.sub(r"[^a-z']", "", latin.lower())
         return [self._dictionary[c] for c in latin if c in self._dictionary]
+
+
+# The aligner places a word's edges at its first and last letter, inside the sound:
+# measured on story one, speech ran on past the end by 45 ms (median) to 160 ms, and
+# began before the start by 25 ms (median) to about 100 ms, so a word cut at the
+# letters loses its final vowel ("khabo" became "khab"). Widen each span by that much
+# without overlapping its neighbours; the end is widened first since it loses more.
+_BEFORE = 0.10
+_AFTER = 0.15
+
+
+def _widen(spans: list[Span], duration: float) -> list[Span]:
+    widened = []
+    for i, span in enumerate(spans):
+        ceiling = spans[i + 1].start if i + 1 < len(spans) else duration
+        floor = widened[-1].end if widened else 0.0
+        widened.append(
+            Span(
+                start=round(max(floor, span.start - _BEFORE), 3),
+                end=round(min(ceiling, span.end + _AFTER), 3),
+                score=span.score,
+            )
+        )
+    return widened
 
 
 class MMSAlignerDataset(AbstractDataset[None, Aligner]):

@@ -28,7 +28,8 @@ per paragraph the clip name, its duration, and the sentences with their words:
 { "text": "দুষ্টু", "start": 0.10, "end": 0.48, "score": 0.83 }
 ```
 
-`start` and `end` are seconds into the clip with no padding; `score` is the aligner's
+`start` and `end` are seconds into the clip, widened a little past the aligner's letter
+boundaries so a word plays whole without any padding; `score` is the aligner's
 confidence (0–1). Words are the whitespace tokens of `source.bn.md`, punctuation
 attached, so they line up one-to-one with the romanized text.
 

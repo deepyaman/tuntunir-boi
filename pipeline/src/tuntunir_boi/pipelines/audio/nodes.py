@@ -90,7 +90,7 @@ def align_words(
     """Where every sentence and word is spoken in its paragraph's clip.
 
     This is what the site reads to play a word or a sentence as a range of the clip.
-    Boundaries are raw: whatever padding playback wants is added there.
+    Spans are ready to play as they are; see `_widen` in the aligner.
     """
     timings = {
         "model": params["model"],
