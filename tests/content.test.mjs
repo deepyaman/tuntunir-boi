@@ -2,7 +2,8 @@
 // the romanized text and the Bengali source line up, the romanized text
 // uses only the characters docs/romanization.md allows, every picture the
 // story imports exists, and the generated audio matches both texts word
-// for word and sentence for sentence. Run with `npm run test:content`.
+// for word and sentence for sentence, and the glossary has one entry per word form
+// that agrees with the romanized text. Run with `npm run test:content`.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -101,5 +102,28 @@ for (const dir of readdirSync(storiesDir).sort()) {
         }
       }
     });
+  });
+
+  // See docs/glossary.md: one entry per word form of source.bn.md, keyed by the form
+  // without its punctuation, in order of first appearance, each naming the romanized
+  // form that index.mdx prints at the same position.
+  const glossaryPath = join(storiesDir, dir, 'glossary.json');
+  test(`story ${dir} glossary`, () => {
+    assert.ok(existsSync(glossaryPath), 'glossary.json is missing; see docs/glossary.md');
+    const rom = parseRomanized(readFileSync(join(storiesDir, dir, 'index.mdx'), 'utf8'));
+    const src = parseBengali(readFileSync(join(storiesDir, dir, 'source.bn.md'), 'utf8'));
+    const glossary = JSON.parse(readFileSync(glossaryPath, 'utf8'));
+    const PUNCT = /^[‘’“”.,!?।]+|[‘’“”.,!?।]+$/g;
+    const bnWords = src.paragraphs.flatMap((p) => p.split(/\s+/)).map((w) => w.replace(PUNCT, ''));
+    const romWords = rom.paragraphs.flatMap((p) => p.split(/\s+/)).map((w) => w.replace(PUNCT, '').toLowerCase());
+    assert.equal(romWords.length, bnWords.length, 'word counts differ between index.mdx and source.bn.md');
+
+    assert.deepEqual(Object.keys(glossary), [...new Set(bnWords)], 'glossary keys must be every form of source.bn.md, once, in order of first appearance');
+    bnWords.forEach((w, i) => assert.equal(glossary[w].romanized, romWords[i], `glossary entry for ${w} does not match the romanized text`));
+    for (const [w, entry] of Object.entries(glossary)) {
+      assert.ok(entry.meaning, `${w}: meaning is missing`);
+      assert.deepEqual(Object.keys(entry).filter((k) => !['romanized', 'meaning', 'from', 'note'].includes(k)), [], `${w}: unknown field`);
+      assert.ok(ALLOWED.test(entry.romanized), `${w}: romanized form uses characters outside the scheme`);
+    }
   });
 }
