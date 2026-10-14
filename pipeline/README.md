@@ -1,9 +1,9 @@
 # Pipeline
 
-A [Kedro](https://kedro.org) project that derives files for the stories in
-`../src/stories/`: audio now, glossaries later. The site never imports anything from
-here; the pipeline writes into the story directories and the results are committed,
-so a reader of the site needs nothing from this directory.
+A [Kedro](https://kedro.org) project that derives the audio for the stories in
+`../src/stories/`. The site never imports anything from here; the pipeline writes into
+the story directories and the results are committed, so a reader of the site needs
+nothing from this directory.
 
 ## The `audio` pipeline
 

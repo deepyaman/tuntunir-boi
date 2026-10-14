@@ -96,4 +96,4 @@ Store text as NFC. Beyond ASCII, the romanized text may contain only:
 - Marks that encode spelling rather than sound: vowel length (ī ū), ṇ for ণ, ś/ṣ for শ/ষ.
   The Bengali source already preserves spelling.
 - A build-time filter that hides a chosen subset of marks.
-- Word-level glosses for old or dialectal words.
+- Glosses. Those live in each story's `glossary.json`; see `docs/glossary.md`.
