@@ -3,7 +3,8 @@
 // uses only the characters docs/romanization.md allows, every picture the
 // story imports exists, and the generated audio matches both texts word
 // for word and sentence for sentence, and the glossary has one entry per word form
-// that agrees with the romanized text. Run with `npm run test:content`.
+// that agrees with the romanized text and marks its romanized words. Run with
+// `npm run test:content`.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
@@ -124,6 +125,16 @@ for (const dir of readdirSync(storiesDir).sort()) {
       assert.ok(entry.meaning, `${w}: meaning is missing`);
       assert.deepEqual(Object.keys(entry).filter((k) => !['romanized', 'meaning', 'from', 'note'].includes(k)), [], `${w}: unknown field`);
       assert.ok(ALLOWED.test(entry.romanized), `${w}: romanized form uses characters outside the scheme`);
+      // Asterisks mark romanized Bengali inside a value: they come in pairs around a
+      // non-empty span of the scheme's characters, and every run of script is followed by one.
+      for (const f of ['meaning', 'from', 'note']) {
+        if (!entry[f]) continue;
+        const pieces = entry[f].split('*');
+        assert.ok(pieces.length % 2 === 1, `${w}: ${f}: unpaired asterisk`);
+        pieces.filter((_, i) => i % 2).forEach((s) => assert.ok(s && s.trim() === s && ALLOWED.test(s), `${w}: ${f}: "*${s}*" is not a romanized span`));
+        const unpaired = entry[f].replace(/[ঀ-৿][ঀ-৿‌‍ -]* \*[^*]+\*/g, '');
+        assert.ok(!/[ঀ-৿]/.test(unpaired), `${w}: ${f}: script without its romanization`);
+      }
     }
   });
 }
