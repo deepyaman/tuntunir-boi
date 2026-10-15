@@ -3,8 +3,9 @@
 Every story has a `glossary.json` next to its text with one entry per word form. It is
 for someone who hears a word, knows roughly what it means, and wants to know what it is
 made of: a compound split into its parts, a suffixed form traced to its base, an old
-spelling tied to the modern one, a sound word named as a sound word. The reader does
-not show the entries yet; the file comes first so the content can be reviewed on its own.
+spelling tied to the modern one, a sound word named as a sound word. The reader shows
+the entry on a card when the word is tapped, so an entry is written to be read in two
+lines on a phone.
 
 The glossary is written by hand, with the whole story in view, and reviewed by a reader
 of romanized Bengali. It is not generated: every entry is a judgement about one word in
@@ -28,8 +29,17 @@ The key is the Bengali form. The value has these fields, in this order and no ot
 |---|---|---|
 | `romanized` | always | The form in the romanization scheme, lowercase, no punctuation. What the reviewer reads, and what the test matches against `index.mdx`. |
 | `meaning` | always | What the form means in this story, in English, as the form is used: an inflected verb is glossed as an inflected verb, a possessive as a possessive. |
-| `from` | when the form is not its own dictionary form, or is a compound | The base word, or the parts joined with ` + `, each as Bengali, romanization, gloss. For an old spelling, the modern dictionary spelling. |
+| `from` | when the form is not its own dictionary form, or is a compound | The base word, or the parts joined with ` + `, each as Bengali, *romanization*, gloss. For an old spelling, the modern dictionary spelling. |
 | `note` | rarely | One sentence that makes the word stick or explains a reference. Not a grammar lesson. |
+
+Script and romanization inside a value:
+
+- Romanized Bengali is wrapped in asterisks, which the card sets in italics, so a reader
+  can tell *chôle gêlo* from the English around it: "off, away (চলে গেল *chôle gêlo*, went
+  off)". Asterisks mean only this; an English word that needs setting off gets quotes.
+- Bengali script may appear, and when it does its romanization follows it at once, in
+  asterisks. Script never stands alone, since the reader cannot read it. A `from` part is
+  therefore "script *romanization*, gloss". The test checks both rules.
 
 Rules of thumb:
 
@@ -38,11 +48,11 @@ Rules of thumb:
   tree's").
 - A form used in two senses in the story gets both, separated by a semicolon, in order of
   first appearance: আর, "and; any more".
-- A grammatical word is glossed by what it does: লা, "rustic vocative particle, roughly
-  *hey you*".
+- A grammatical word is glossed by what it does: লা, "hey, you (a rustic particle one
+  female uses to address another)".
 - A name is glossed by who it is: টুনটুনি, "the tailorbird, our heroine".
 - `from` is the field that earns the entry. A one-word gloss of লক্ষ্মীছাড়ী as "wretched"
-  answers nothing; "লক্ষ্মীছাড়া lokkhichhaṛa, literally abandoned by Lakshmi" does.
+  answers nothing; "লক্ষ্মীছাড়া *lokkhichhaṛa*, literally abandoned by Lakshmi" does.
 - Verb forms point at the verbal noun as the dictionary form: খিঁচিয়ে from খিঁচানো,
   বললে from বলা.
 - Old spellings (খুশী, মহারানী, ভারী) keep their own entry under the printed form; `from`
@@ -51,11 +61,11 @@ Rules of thumb:
 ## Worked examples
 
 ```json
-"খিঁচিয়ে": { "romanized": "khĩchiye", "meaning": "baring (its teeth)", "from": "খিঁচানো khĩchano, bare or grind the teeth, grimace" },
-"ছানাও": { "romanized": "chhanao", "meaning": "the chicks either", "from": "ছানা chhana, chick, young one + ও -o, also, even" },
-"লক্ষ্মীছাড়ী": { "romanized": "lokkhichhaṛi", "meaning": "wretched, good-for-nothing (feminine)", "from": "লক্ষ্মীছাড়া lokkhichhaṛa, literally abandoned by Lakshmi", "note": "Lakshmi is the goddess of fortune; the feminine -ী is aimed at the she-cat." },
-"ফুড়ুক": { "romanized": "phuṛuk", "meaning": "a flutter", "note": "Sound word for a small bird's sudden flight: ফুড়ুক করে উড়ে is flew off with a flutter." },
-"মহারানী": { "romanized": "môharani", "meaning": "great queen, Your Majesty", "from": "মহা môha, great + রানী rani, queen; modern spelling মহারানি" },
+"খিঁচিয়ে": { "romanized": "khĩchiye", "meaning": "baring (its teeth)", "from": "খিঁচানো *khĩchano*, bare or grind the teeth, grimace" },
+"ছানাও": { "romanized": "chhanao", "meaning": "the chicks either", "from": "ছানা *chhana*, chick, young one + ও *-o*, also, even" },
+"লক্ষ্মীছাড়ী": { "romanized": "lokkhichhaṛi", "meaning": "wretched, good-for-nothing (feminine)", "from": "লক্ষ্মীছাড়া *lokkhichhaṛa*, literally abandoned by Lakshmi", "note": "Lakshmi is the goddess of fortune; the feminine -ী *-i* is aimed at the she-cat." },
+"ফুড়ুক": { "romanized": "phuṛuk", "meaning": "a flutter", "note": "Sound word for a small bird's sudden flight: ফুড়ুক করে উড়ে *phuṛuk kôre uṛe*, flew off with a flutter." },
+"মহারানী": { "romanized": "môharani", "meaning": "great queen, Your Majesty", "from": "মহা *môha*, great + রানী *rani*, queen; modern spelling মহারানি *môharani*" },
 "বেগুন": { "romanized": "begun", "meaning": "eggplant, brinjal" },
 "আর": { "romanized": "ar", "meaning": "and; any more" }
 ```
@@ -67,13 +77,16 @@ Rules of thumb:
    entry the first time a form appears.
 3. Run `npm run test:content`. It checks that the keys are exactly the forms of the story
    in order, that every `romanized` field matches the word at the same position in
-   `index.mdx`, and that the fields are the four above.
+   `index.mdx`, that the fields are the four above, that asterisks come in pairs around
+   romanized text, and that no script stands without its romanization.
 4. Review as a table of romanized form, meaning, from, note. Fixes go straight into the
    file.
 
 ## Not used (yet)
 
-- Showing the entries in the reader (a word card).
-- Bengali script in the reader; the entries carry it for when that comes.
+- A card anchored next to the tapped word on wide screens; the card is a sheet at the
+  bottom of the screen everywhere.
+- Hiding the script on the card, if it turns out to be clutter. The rule above makes
+  that a display change, not a content change.
 - Links out, to Wiktionary or elsewhere.
 - One glossary shared across stories. Common words repeat in every story's file for now.
