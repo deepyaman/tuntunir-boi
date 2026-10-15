@@ -88,6 +88,40 @@ test('the mark after a sentence plays it word by word', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('tapping a word shows its gloss on a card', async ({ page }) => {
+  const errors = pageErrors(page);
+  await page.goto(story);
+  const lit = await recordLitWords(page);
+  const card = page.locator('#card');
+  const words = page.locator('article .word');
+
+  await words.nth(0).click(); // "Grihôsther", which has a `from`
+  await expect(card).toBeVisible();
+  await expect(card.locator('.headword')).toHaveText('Grihôsther');
+  // The "from" label is CSS, like the play mark, so it is not part of the text.
+  await expect(card.locator('.gloss p')).toHaveText(["the householder's", "গৃহস্থ grihôstho, householder, family man + এর -er, 's"]);
+  await expect(card.locator('.gloss .from i').first()).toHaveText('grihôstho');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
+
+  await words.nth(3).click(); // "begun", which has only a meaning
+  await expect(card.locator('.headword')).toHaveText('begun');
+  await expect(card.locator('.gloss p')).toHaveText(['eggplant, brinjal']);
+
+  await page.keyboard.press('Escape');
+  await expect(card).toBeHidden();
+  await words.nth(5).click(); // "achhe.", the punctuation left off the headword
+  await expect(card.locator('.headword')).toHaveText('achhe');
+  await card.getByRole('button', { name: 'Close' }).click();
+  await expect(card).toBeHidden();
+  await words.nth(0).click();
+  await page.getByRole('button', { name: 'Play sentence' }).first().click();
+  await expect(card).toBeHidden();
+
+  await expect(page.locator('article .playing')).toHaveCount(0);
+  expect(await lit()).toEqual([0, 3, 5, 0, 1, 2, 3, 4, 5]); // the sentence starts on the word already lit
+  expect(errors).toEqual([]);
+});
+
 test('nothing is wider than the viewport', async ({ page }) => {
   await page.goto(story);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);

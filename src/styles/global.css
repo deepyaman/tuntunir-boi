@@ -120,6 +120,65 @@ article {
   color: var(--link);
 }
 
+/* The word card: a sheet at the bottom of the screen with the tapped word's glossary
+   entry. It is a popover, so the browser's defaults (centred, bordered) are overridden. */
+#card {
+  position: fixed;
+  inset: auto 0 0;
+  width: min(100%, calc(var(--measure) + 2rem)); /* the column's measure plus its padding, so the text lines up */
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+  border: 0;
+  border-top: 1px solid var(--rule);
+  background: var(--bg);
+  color: inherit;
+  font: inherit;
+  box-shadow: 0 -0.25rem 1rem rgb(0 0 0 / 0.08);
+}
+
+#card p {
+  margin: 0;
+}
+
+.headword {
+  padding-right: 2rem; /* room for the close button */
+  font-size: 1.1em;
+}
+
+.from::before {
+  content: 'from ';
+  color: var(--muted);
+}
+
+.note {
+  font-size: 0.9em;
+  color: var(--muted);
+}
+
+.close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  padding: 0 0.25rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 1.25em;
+  line-height: 1;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.close::before {
+  content: '×';
+}
+
+.close:hover,
+.close:focus-visible {
+  color: var(--link);
+}
+
 figure {
   margin: 2rem auto;
   text-align: center;

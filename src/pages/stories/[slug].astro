@@ -11,16 +11,24 @@ export async function getStaticPaths() {
 
 // The pipeline writes one clip per paragraph and timings.json into each story's audio/
 // (see pipeline/README.md). The page inlines the ranges the reader script needs, with
-// the clip names resolved to their built URLs.
+// the clip names resolved to their built URLs, and the gloss of every word from the
+// story's glossary.json (see docs/glossary.md), as the HTML the word card shows.
 interface Range {
   start: number;
   end: number;
 }
 interface Timings {
-  paragraphs: { clip: string; sentences: (Range & { words: Range[] })[] }[];
+  paragraphs: { clip: string; sentences: (Range & { words: (Range & { text: string })[] })[] }[];
+}
+interface Entry {
+  romanized: string;
+  meaning: string;
+  from?: string;
+  note?: string;
 }
 const clipUrls = import.meta.glob('/src/stories/*/audio/*.m4a', { query: '?url', import: 'default', eager: true }) as Record<string, string>;
 const allTimings = import.meta.glob('/src/stories/*/audio/timings.json', { import: 'default', eager: true }) as Record<string, Timings>;
+const glossaries = import.meta.glob('/src/stories/*/glossary.json', { import: 'default', eager: true }) as Record<string, Record<string, Entry>>;
 
 const { story } = Astro.props;
 const { Content } = await render(story);
@@ -37,6 +45,22 @@ const audio = timings.paragraphs.map((p) => ({
     words: s.words.map((w) => ({ start: w.start, end: w.end })),
   })),
 }));
+
+// A word's entry is keyed by its Bengali form without the punctuation around it, the
+// same rule as tests/content.test.mjs. Asterisks mark romanized Bengali, set in italics.
+const glossary = glossaries[`/${dir}/glossary.json`];
+const PUNCT = /^[‘’“”.,!?।]+|[‘’“”.,!?।]+$/g;
+const italic = (s: string) => s.replace(/\*([^*]+)\*/g, '<i>$1</i>');
+const glosses = timings.paragraphs.flatMap((p) =>
+  p.sentences.flatMap((s) =>
+    s.words.map((w) => {
+      const { meaning, from, note } = glossary[w.text.replace(PUNCT, '')];
+      return [`<p>${italic(meaning)}</p>`, from && `<p class="from">${italic(from)}</p>`, note && `<p class="note">${italic(note)}</p>`]
+        .filter(Boolean)
+        .join('');
+    }),
+  ),
+);
 ---
 
 <Base title={`${story.data.title} · Ṭunṭunir Boi`}>
@@ -44,7 +68,14 @@ const audio = timings.paragraphs.map((p) => ({
     <h1>{story.data.title}</h1>
     <Content components={{ Illustration, p: Paragraph }} />
   </article>
+  <!-- The word card. A popover closes on Escape or a tap outside it with no script. -->
+  <aside id="card" popover lang="en">
+    <button class="close" popovertarget="card" popovertargetaction="hide" aria-label="Close"></button>
+    <p class="headword" lang="bn-Latn"></p>
+    <div class="gloss"></div>
+  </aside>
   <script type="application/json" id="timings" set:html={JSON.stringify(audio)} />
+  <script type="application/json" id="glosses" set:html={JSON.stringify(glosses)} />
   <script src="../../scripts/reader.ts"></script>
   <nav class="story-nav">
     <a href={`${base}/`}>← Contents</a>

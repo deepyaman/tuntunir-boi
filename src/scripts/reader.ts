@@ -2,20 +2,26 @@
 // clip; a word or sentence is a time range of it (see pipeline/README.md), and the
 // page inlines those ranges as JSON. Ranges are already widened to the spoken sound,
 // so they are played exactly as given, with the Web Audio API for precise stops.
+// A tapped word also opens the card with its gloss, inlined by the page as HTML.
 
 type Range = { start: number; end: number };
 type Paragraph = { clip: string; sentences: (Range & { words: Range[] })[] };
-type Target = { clip: string; range: Range; words: { el: Element; range: Range }[] };
+type Target = { clip: string; range: Range; words: { el: Element; range: Range }[]; gloss?: string };
 
 const timings: Paragraph[] = JSON.parse(document.getElementById('timings')!.textContent!);
+const glosses: string[] = JSON.parse(document.getElementById('glosses')!.textContent!);
 const article = document.querySelector('article')!;
 const paragraphs = [...article.querySelectorAll(':scope > p')];
 if (paragraphs.length !== timings.length) {
   throw new Error(`${paragraphs.length} paragraphs on the page but ${timings.length} in the timings`);
 }
+if (article.querySelectorAll('.word').length !== glosses.length) {
+  throw new Error(`${article.querySelectorAll('.word').length} words on the page but ${glosses.length} glosses`);
+}
 
 // What each word span and sentence button plays, and which words light up meanwhile.
 const targets = new Map<Element, Target>();
+let n = 0; // index of the word in the story, which is how the glosses are listed
 paragraphs.forEach((p, i) => {
   const spans = [...p.querySelectorAll('.word')];
   const buttons = [...p.querySelectorAll('.play')];
@@ -26,7 +32,7 @@ paragraphs.forEach((p, i) => {
   let k = 0;
   sentences.forEach((s, j) => {
     const words = s.words.map((range) => ({ el: spans[k++], range }));
-    for (const w of words) targets.set(w.el, { clip, range: w.range, words: [w] });
+    for (const w of words) targets.set(w.el, { clip, range: w.range, words: [w], gloss: glosses[n++] });
     targets.set(buttons[j], { clip, range: s, words });
   });
 });
@@ -84,7 +90,21 @@ async function play(target: Target) {
   playing = { source, frame: requestAnimationFrame(tick) };
 }
 
+// The card shows the tapped word as printed, without the punctuation around it (the
+// rule of tests/content.test.mjs), over its gloss. Tapping outside the card closes it
+// before the click arrives, so a tap on another word simply opens it again.
+const card = document.getElementById('card')!;
+const PUNCT = /^[‘’“”.,!?]+|[‘’“”.,!?]+$/g;
+function show(word: Element, gloss: string) {
+  card.querySelector('.headword')!.textContent = word.textContent!.replace(PUNCT, '');
+  card.querySelector('.gloss')!.innerHTML = gloss;
+  card.togglePopover(true);
+}
+
 article.addEventListener('click', (event) => {
   const hit = (event.target as Element).closest('.word, .play');
-  if (hit) play(targets.get(hit)!);
+  if (!hit) return;
+  const target = targets.get(hit)!;
+  play(target);
+  if (target.gloss) show(hit, target.gloss);
 });
