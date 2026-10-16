@@ -49,7 +49,7 @@ const audio = timings.paragraphs.map((p) => ({
 // A word's entry is keyed by its Bengali form without the punctuation around it, the
 // same rule as tests/content.test.mjs. Asterisks mark romanized Bengali, set in italics.
 const glossary = glossaries[`/${dir}/glossary.json`];
-const PUNCT = /^[‘’“”.,!?।]+|[‘’“”.,!?।]+$/g;
+const PUNCT = /^[‘’“”.,!?।—]+|[‘’“”.,!?।—]+$/g;
 const italic = (s: string) => s.replace(/\*([^*]+)\*/g, '<i>$1</i>');
 const glosses = timings.paragraphs.flatMap((p) =>
   p.sentences.flatMap((s) =>

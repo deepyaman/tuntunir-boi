@@ -81,6 +81,13 @@ article p {
   text-indent: 1.5em;
 }
 
+/* Verse (several lines in one paragraph) is set as a centred block, not indented prose. */
+article p.verse {
+  margin: 1em 0;
+  text-indent: 0;
+  text-align: center;
+}
+
 /* Story audio: tap a word to hear it, or the mark after a sentence to hear the sentence.
    The word being spoken is tinted. */
 article {

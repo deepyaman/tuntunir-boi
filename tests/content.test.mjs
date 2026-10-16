@@ -114,7 +114,7 @@ for (const dir of readdirSync(storiesDir).sort()) {
     const rom = parseRomanized(readFileSync(join(storiesDir, dir, 'index.mdx'), 'utf8'));
     const src = parseBengali(readFileSync(join(storiesDir, dir, 'source.bn.md'), 'utf8'));
     const glossary = JSON.parse(readFileSync(glossaryPath, 'utf8'));
-    const PUNCT = /^[‘’“”.,!?।]+|[‘’“”.,!?।]+$/g;
+    const PUNCT = /^[‘’“”.,!?।—]+|[‘’“”.,!?।—]+$/g;
     const bnWords = src.paragraphs.flatMap((p) => p.split(/\s+/)).map((w) => w.replace(PUNCT, ''));
     const romWords = rom.paragraphs.flatMap((p) => p.split(/\s+/)).map((w) => w.replace(PUNCT, '').toLowerCase());
     assert.equal(romWords.length, bnWords.length, 'word counts differ between index.mdx and source.bn.md');

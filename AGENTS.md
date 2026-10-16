@@ -30,7 +30,8 @@ src/pages/                     index (table of contents) and stories/[slug]; the
                                inlines the ranges from timings.json and the glosses for the
                                reader script
 src/components/Illustration.astro
-src/components/Paragraph.astro wraps each word and sentence of a story paragraph
+src/components/Paragraph.astro wraps each word and sentence of a story paragraph; a paragraph
+                               written on several lines is verse and keeps its lines
 src/scripts/reader.ts          plays a tapped word or sentence as a range of its clip and
                                shows the word's gloss on a card
 src/layouts/Base.astro
@@ -54,7 +55,8 @@ and CI runs each half only when its files change.
    (`https://commons.wikimedia.org/w/thumb.php?f=টুনটুনির_বই.djvu&page=N&w=1400`).
    Wikisource is proofread but not validated; fix slips to match the print.
 3. Write `source.bn.md` first: `# title`, one paragraph per printed paragraph, and each
-   illustration caption as a `> ` blockquote where the picture sits in the book.
+   illustration caption as a `> ` blockquote where the picture sits in the book. Verse
+   is one paragraph with one line per printed line.
 4. Romanize into `index.mdx` following `docs/romanization.md`. Keep the same paragraph
    breaks. Fill in the frontmatter.
 5. Write `glossary.json` following `docs/glossary.md`: one entry per word form, in the

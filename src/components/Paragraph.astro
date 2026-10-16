@@ -11,7 +11,10 @@ const text = (await Astro.slots.render('default')).trim();
 const word = (w: string) => `<span class="word">${w}</span>`;
 const sentence = (s: string) =>
   `<span class="sentence">${s.split(/\s+/).map(word).join(' ')}<button class="play" aria-label="Play sentence"></button></span>`;
-const html = text.split(/(?<=[.!?][’”]?)\s+/).map(sentence).join(' ');
+const line = (l: string) => l.split(/(?<=[.!?][’”]?)\s+/).map(sentence).join(' ');
+// A paragraph written on several lines is verse: each line is kept on its own line.
+const lines = text.split('\n').map((l) => l.trim());
+const html = lines.map(line).join('<br>');
 ---
 
-<p set:html={html} />
+<p class:list={{ verse: lines.length > 1 }} set:html={html} />
