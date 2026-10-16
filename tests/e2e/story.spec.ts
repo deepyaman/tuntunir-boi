@@ -122,6 +122,19 @@ test('tapping a word shows its gloss on a card', async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test('the second story keeps the lines of its verse', async ({ page }) => {
+  const errors = pageErrors(page);
+  await page.goto('stories/tuntuni-ar-napiter-kotha/');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Ṭunṭuni ar napiter kôtha');
+  await expect(page.locator('article .word')).toHaveCount(611);
+  const verse = page.locator('article p.verse');
+  await expect(verse).toHaveCount(1);
+  await expect(verse.locator('br')).toHaveCount(6);
+  await expect(verse.getByRole('button', { name: 'Play sentence' })).toHaveCount(7);
+  await expect(verse).toHaveText(/^Hati bôle, shagor shushi!\s*Shagor bôle, agun nebai!/);
+  expect(errors).toEqual([]);
+});
+
 test('nothing is wider than the viewport', async ({ page }) => {
   await page.goto(story);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
