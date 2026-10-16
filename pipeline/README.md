@@ -18,8 +18,12 @@ For one story, it
 4. writes one AAC clip per paragraph plus `timings.json` into the story's `audio/`.
 
 Paragraph takes rather than word or sentence takes because the model is built for
-connected speech: a lone sentence sometimes runs on into silence, a paragraph never did.
-The site plays a word or a sentence as a time range of its paragraph's clip.
+connected speech: a lone sentence sometimes runs on into silence, a paragraph rarely
+does. Takes sample at the model's production settings (temperature 0.6, top-p 0.9,
+repetition penalty 1.2); its own `inference.py` leaves out the penalty, and without it
+a paragraph of short clauses, like the verse in story two, stalls into silence on
+almost every seed. The site plays a word or a sentence as a time range of its
+paragraph's clip.
 
 `timings.json` records the model and its pinned revision, the voice and the seed, then
 per paragraph the clip name, its duration, and the sentences with their words:

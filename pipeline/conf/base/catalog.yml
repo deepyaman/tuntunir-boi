@@ -20,6 +20,7 @@ tts_model:
   model: ${globals:tts_model}
   revision: ${globals:tts_revision}
   local_dir: data/models/indic-speak
+  repetition_penalty: 1.2 # the model's production setting; see the dataset
 
 paragraph_wavs:
   type: partitions.PartitionedDataset

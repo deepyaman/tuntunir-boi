@@ -38,6 +38,12 @@ def synthesize(
     tends to recur at the same temperature whatever the seed, so a failed take is
     retried with the next seed and a temperature 0.1 higher, up to `retries` times.
     A run is still fully determined by its parameters.
+
+    The token limit, `max_new_tokens`, is also the budget for a whole paragraph: a
+    take that honestly needs longer is cut off with the same warning, and a take that
+    fits by rushing through the text is not. The model's default of 2520 (about 30 s)
+    is short for the long paragraph before story two's verse, so the limit is a
+    parameter.
     """
 
     def take(pid: str, sentences: list[str]) -> Callable[[], Audio]:
@@ -52,6 +58,7 @@ def synthesize(
                         speaker=params["voice"],
                         seed=seed,
                         temperature=temperature,
+                        max_new_tokens=params["max_new_tokens"],
                     )
                 stalled = [w for w in caught if "max_new_tokens" in str(w.message)]
                 for w in caught:
